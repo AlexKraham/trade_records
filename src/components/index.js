@@ -35,12 +35,22 @@ export default function Index() {
     let fetched
     if (selectedTab === 0) {
       fetched = await axios.get(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit'
+        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit',
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
     } else {
       fetched = await axios.get(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
-          user.username
+          user.username,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
     }
 

@@ -14,8 +14,10 @@ export default function Navigation() {
   const [user, setUser] = useContext(AuthContext)
   const history = useHistory()
   async function handleSignout() {
-    var cognitoUser = userPool.getCurrentUser()
-    await cognitoUser.signOut()
+    // var cognitoUser = userPool.getCurrentUser()
+    // await cognitoUser.signOut()
+    sessionStorage.removeItem('access_token')
+    sessionStorage.removeItem('user')
     setUser(null)
     history.push('/')
   }

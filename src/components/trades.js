@@ -60,7 +60,7 @@ function LogTradeModal(props) {
 
   const handleChange = (prop) => (event) => {
     setValues({ ...values, [prop]: event.target.value })
-    console.log('changing', values)
+    // console.log('changing', values)
   }
 
   function handleSave() {
@@ -92,7 +92,12 @@ function LogTradeModal(props) {
     axios
       .put(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/tradesupdate/',
-        postData
+        postData,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
       .then((response) => {
         // console.log(response)
@@ -139,8 +144,12 @@ function LogTradeModal(props) {
     axios
       .post(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades',
-
-        postData
+        postData,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
       .then((response) => {
         // console.log(response)
@@ -190,8 +199,12 @@ function LogTradeModal(props) {
     axios
       .post(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades',
-
-        values
+        values,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
       .then((response) => {
         // console.log(response)
@@ -234,11 +247,7 @@ function LogTradeModal(props) {
                 label='Date Of Trade Execution'
                 value={values.date_executed}
                 onChange={(newValue) => {
-                  // setDateExecuted(newValue)
                   setValues({ ...values, date_executed: newValue })
-                  // console.log('new values', values)
-                  // values.dateExecuted = newValue
-                  // handleChange('dateExecuted', newValue)
                 }}
               />
             </LocalizationProvider>
@@ -427,9 +436,6 @@ export default function Trades(props) {
           <TableBody>
             {rows.map((row, index) => (
               <StyledTableRow key={index}>
-                {/* <StyledTableCell component='th' scope='row'>
-                  {row.name}
-                </StyledTableCell> */}
                 <StyledTableCell>{row.date_executed}</StyledTableCell>
                 <StyledTableCell>{row.type}</StyledTableCell>
                 <StyledTableCell>{row.side}</StyledTableCell>
@@ -473,7 +479,12 @@ export default function Trades(props) {
     await axios
       .delete(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/' +
-          item
+          item,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
       .then((response) => {
         console.log(response)
@@ -493,7 +504,11 @@ export default function Trades(props) {
           user.username +
           '/'
     let fetched
-    fetched = await axios.get(apiUrl + lastEvaluatedKey.item_id)
+    fetched = await axios.get(apiUrl + lastEvaluatedKey.item_id, {
+      headers: {
+        Authorization: user.access_token,
+      },
+    })
 
     setRows(fetched.data.items)
     setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
@@ -501,9 +516,6 @@ export default function Trades(props) {
     setPageIndex(pageIndex + 1)
   }
 
-  // page 1 : [keyforpage2]
-  // page2 : [keyforpage2, keyforpage3]
-  // page3 : [keyforpage2, keyforpage3, keyforpage4]
   async function handlePreviousPage() {
     startKeys.pop()
     startKeys.pop()
@@ -517,10 +529,19 @@ export default function Trades(props) {
     // we are on page 3
     let fetched
     if (startKeys.length === 0) {
-      fetched = await axios.get(apiUrl)
+      fetched = await axios.get(apiUrl, {
+        headers: {
+          Authorization: user.access_token,
+        },
+      })
     } else {
       fetched = await axios.get(
-        apiUrl + startKeys[startKeys.length - 1].item_id
+        apiUrl + startKeys[startKeys.length - 1].item_id,
+        {
+          headers: {
+            Authorization: user.access_token,
+          },
+        }
       )
     }
 
@@ -538,12 +559,6 @@ export default function Trades(props) {
   return (
     <>
       <div>
-        {/* <Button
-          onClick={handleLogTrade}
-          style={{ float: 'right', marginRight: '10px', marginBottom: '5px' }}
-        >
-          Log new trade
-        </Button> */}
         <LogTradeModal
           setRows={setRows}
           rows={rows}
