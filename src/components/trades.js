@@ -91,12 +91,11 @@ function LogTradeModal(props) {
     }
     axios
       .put(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades',
-
+        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/tradesupdate/',
         postData
       )
       .then((response) => {
-        console.log(response)
+        // console.log(response)
         props.setOpen(false)
         let filteredRows = props.rows.filter((row) => {
           return row.item_id !== values.item_id
@@ -107,7 +106,7 @@ function LogTradeModal(props) {
 
   function handleSubmit(event) {
     event.preventDefault()
-    console.log('values', values)
+    // console.log('values', values)
     let status = ''
 
     const entry = parseInt(values.entry)
@@ -135,7 +134,7 @@ function LogTradeModal(props) {
       date_executed: values.date_executed.toString(),
       item_id: item_id,
     }
-    console.log('postdata', postData)
+    // console.log('postdata', postData)
 
     axios
       .post(
@@ -144,7 +143,7 @@ function LogTradeModal(props) {
         postData
       )
       .then((response) => {
-        console.log(response)
+        // console.log(response)
         props.setOpen(false)
         props.setRows([postData, ...props.rows])
       })
@@ -195,7 +194,7 @@ function LogTradeModal(props) {
         values
       )
       .then((response) => {
-        console.log(response)
+        // console.log(response)
         props.setOpen(false)
         props.setRows([values, ...props.rows])
       })
@@ -237,7 +236,7 @@ function LogTradeModal(props) {
                 onChange={(newValue) => {
                   // setDateExecuted(newValue)
                   setValues({ ...values, date_executed: newValue })
-                  console.log('new values', values)
+                  // console.log('new values', values)
                   // values.dateExecuted = newValue
                   // handleChange('dateExecuted', newValue)
                 }}
@@ -359,9 +358,9 @@ function LogTradeModal(props) {
 
 export default function Trades(props) {
   const [user, setUser] = useContext(AuthContext)
-  const [rows, setRows] = useState([])
-  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null)
-  const [startKeys, setStartKeys] = useState([])
+  const { rows, setRows } = props
+  const { lastEvaluatedKey, setLastEvaluatedKey, startKeys, setStartKeys } =
+    props
   const [pageIndex, setPageIndex] = useState(0)
   const [open, setOpen] = useState(false)
   const [initialValues, setInitialValues] = useState({})
@@ -379,9 +378,6 @@ export default function Trades(props) {
   })
 
   const handleEdit = (row) => {
-    // console.log(row.date_executed)
-    // row.date_executed = Date.parse(row.date_executed)
-    // console.log(row.date_executed)
     setValues({
       ...row,
       date_excuted: Date.parse(row.date_executed),
@@ -410,9 +406,6 @@ export default function Trades(props) {
     },
   }))
 
-  useEffect(() => {
-    console.log('user user naem', user.username)
-  })
   function CustomizedTables() {
     return (
       <TableContainer component={Paper}>
@@ -477,8 +470,6 @@ export default function Trades(props) {
   }
 
   async function handleDelete(item) {
-    console.log('handing delete', item)
-
     await axios
       .delete(
         'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/' +
@@ -489,19 +480,21 @@ export default function Trades(props) {
         let newRows = rows.filter((row) => {
           return row.item_id !== item
         })
-        console.log('new rows', newRows)
+
         setRows(newRows)
       })
   }
 
   async function handleNextPage() {
-    console.log('last', lastEvaluatedKey)
+    let apiUrl =
+      props.selectedTab === 0
+        ? 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/'
+        : 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
+          user.username +
+          '/'
     let fetched
-    fetched = await axios.get(
-      'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/' +
-        lastEvaluatedKey.item_id
-    )
-    console.log(fetched.data)
+    fetched = await axios.get(apiUrl + lastEvaluatedKey.item_id)
+
     setRows(fetched.data.items)
     setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
     setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
@@ -515,54 +508,32 @@ export default function Trades(props) {
     startKeys.pop()
     startKeys.pop()
 
+    let apiUrl =
+      props.selectedTab === 0
+        ? 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/'
+        : 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
+          user.username +
+          '/'
     // we are on page 3
     let fetched
     if (startKeys.length === 0) {
-      fetched = await axios.get(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/'
-      )
+      fetched = await axios.get(apiUrl)
     } else {
       fetched = await axios.get(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/' +
-          startKeys[startKeys.length - 1].item_id
+        apiUrl + startKeys[startKeys.length - 1].item_id
       )
     }
 
-    console.log(fetched.data)
+    // console.log(fetched.data)
     setRows(fetched.data.items)
     setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
     setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
     setPageIndex(pageIndex - 1)
-    console.log('startkeys', startKeys)
-  }
-
-  async function fetchData() {
-    console.log(props.selectedTab)
-    console.log('fetcing data for: ' + user.username)
-    let fetched
-    if (props.selectedTab === 0) {
-      fetched = await axios.get(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit'
-      )
-    } else {
-      fetched = await axios.get(
-        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
-          user.username
-      )
-    }
-
-    // console.log('fetched', fetched)
-    console.log(fetched.data)
-    if (fetched.data !== null) {
-      setRows(fetched.data.items)
-    }
-
-    setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
-    setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
+    // console.log('startkeys', startKeys)
   }
 
   useEffect(() => {
-    fetchData()
+    props.fetchData()
   }, [props.selectedTab])
   return (
     <>

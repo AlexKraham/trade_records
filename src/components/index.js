@@ -4,6 +4,7 @@ import { AuthContext } from '../GlobalStates'
 import { useHistory } from 'react-router-dom'
 import Navigation from './navigation'
 import Trades from './trades'
+import axios from 'axios'
 
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
@@ -14,14 +15,43 @@ export default function Index() {
   const [user, setUser] = useContext(AuthContext)
   const [selectedTab, setSelectedTab] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null)
+  const [startKeys, setStartKeys] = useState([])
+  const [rows, setRows] = useState([])
 
   // const [value, setValue] = React.useState(0)
 
   const handleChange = (event, newValue) => {
     setSelectedTab(newValue)
+    // setStartKeys([])
+    // setLastEvaluatedKey(null)
+    fetchData()
   }
   const loadData = () => {
     setLoading(false)
+  }
+
+  async function fetchData() {
+    let fetched
+    if (selectedTab === 0) {
+      fetched = await axios.get(
+        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit'
+      )
+    } else {
+      fetched = await axios.get(
+        'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
+          user.username
+      )
+    }
+
+    // console.log('fetched', fetched)
+    console.log(fetched.data)
+    if (fetched.data !== null) {
+      setRows(fetched.data.items)
+    }
+
+    setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
+    setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
   }
 
   useEffect(() => {
@@ -49,26 +79,19 @@ export default function Index() {
         <div style={{ marginTop: '10px', marginLeft: '10px' }}>
           <Tabs value={selectedTab} onChange={handleChange}>
             <Tab label='All Public Trades' />
-            <Tab label='My Trades' />
+            {/* <Tab label='My Trades' /> */}
           </Tabs>
-          {/* <Stack direction='row' spacing={2}>
-            <Button
-              variant='contained'
-              disabled={selectedButton === 0}
-              onClick={handleAllPublicTrades}
-            >
-              All public trades
-            </Button>
-            <Button
-              variant='contained'
-              disabled={selectedButton === 1}
-              onClick={handleMyTrades}
-            >
-              My trades
-            </Button>
-          </Stack> */}
-          {/* {renderComponent(selectedTab)} */}
-          <Trades selectedTab={selectedTab} />
+
+          <Trades
+            selectedTab={selectedTab}
+            startKeys={startKeys}
+            setStartKeys={setStartKeys}
+            lastEvaluatedKey={lastEvaluatedKey}
+            setLastEvaluatedKey={setLastEvaluatedKey}
+            fetchData={fetchData}
+            rows={rows}
+            setRows={setRows}
+          />
         </div>
       )}
     </div>

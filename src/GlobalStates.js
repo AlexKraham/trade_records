@@ -13,19 +13,21 @@ export const AuthProvider = (props) => {
     console.log('user', cognitoUser)
     setUser(cognitoUser)
 
-    // cognitoUser.getSession(function (err, session) {
-    //   if (err) {
-    //     alert(err.message || JSON.stringify(err))
-    //     return
-    //   }
-    //   console.log('session validity: ' + session.isValid())
-    //   console.log('session', session)
-    //   console.log('token', session.accessToken.jwtToken)
-    //   var accessToken = session.getAccessToken().getJwtToken()
-    //   console.log('ACCESS', accessToken)
+    if (cognitoUser !== null) {
+      cognitoUser.getSession(function (err, session) {
+        if (err) {
+          alert(err.message || JSON.stringify(err))
+          return
+        }
+        console.log('session validity: ' + session.isValid())
+        console.log('session', session)
+        console.log('token', session.accessToken.jwtToken)
+        var accessToken = session.getAccessToken().getJwtToken()
+        console.log('idtoken', session.idToken)
 
-    //   // console.log("id toekn", session.idToken.jwtToken)
-    // })
+        // console.log("id toekn", session.idToken.jwtToken)
+      })
+    }
   }
   useEffect(() => {
     getUser()

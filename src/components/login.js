@@ -53,7 +53,7 @@ export default function SignIn() {
       Pool: userPool,
     }
     var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData)
-    await cognitoUser.authenticateUser(authenticationDetails, {
+    cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: function (result) {
         console.log('result', result)
         var accessToken = result.getAccessToken().getJwtToken()
@@ -92,6 +92,8 @@ export default function SignIn() {
     })
   }
 
+  // const handleLogin = async (data) => {}
+
   const handleSignup = async (data) => {
     let attributeList = []
     var dataEmail = {
@@ -103,14 +105,7 @@ export default function SignIn() {
     )
     attributeList.push(attributeEmail)
 
-    // eslint-disable-next-line no-console
-    // console.log({
-    //   email: data.get('email'),
-    //   password: data.get('password'),
-    //   username: data.get('username'),
-    // })
-
-    await userPool.signUp(
+    userPool.signUp(
       data.get('username'),
       data.get('password'),
       attributeList,
@@ -122,79 +117,14 @@ export default function SignIn() {
         }
         var cognitoUser = result.user
         console.log('user name is ' + cognitoUser.getUsername())
-
-        const authenticationData = {
-          Username: data.get('username'),
-          Password: data.get('password'),
-        }
-        var authenticationDetails =
-          new AmazonCognitoIdentity.AuthenticationDetails(authenticationData)
-
-        setTimeout(() => {
-          cognitoUser.authenticateUser(authenticationDetails, {
-            onSuccess: function (result) {
-              var accessToken = result.getAccessToken().getJwtToken()
-
-              //POTENTIAL: Region needs to be set if not already set previously elsewhere.
-              AWS.config.region = 'us-west-1'
-
-              AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-                IdentityPoolId:
-                  'us-west-1:bf655732-bb78-4a22-93d4-8ba4465eb654', // your identity pool id here
-                Logins: {
-                  // Change the key below according to the specific region your user pool is in.
-                  'cognito-idp.us-west-1.amazonaws.com/us-west-1_6XpsYazg3':
-                    result.getIdToken().getJwtToken(),
-                },
-              })
-
-              AWS.config.credentials.clearCachedId()
-              //refreshes credentials using AWS.CognitoIdentity.getCredentialsForIdentity()
-              AWS.config.credentials.refresh((error) => {
-                if (error) {
-                  console.error(error)
-                } else {
-                  // Instantiate aws sdk service objects now that the credentials have been updated.
-                  // example: var s3 = new AWS.S3();
-                  console.log('Successfully logged!')
-                  setUser(cognitoUser)
-                  // history.push('/dash')
-                }
-              })
-            },
-
-            onFailure: function (err) {
-              alert(err.message || JSON.stringify(err))
-            },
-          })
-        }, 0)
         //after signing up, log in the user.
-        // handleLogin(data)
+        handleLogin(data)
       }
     )
   }
 
   function renderSignUp() {
-    console.log('rendering sign up')
     setSignUp(!signUp)
-  }
-
-  function handleTest() {
-    let attributeList = []
-    var dataEmail = {
-      Name: 'email',
-      Value: 'email@gmail.com',
-    }
-    var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(
-      dataEmail
-    )
-    attributeList.push(attributeEmail)
-    UserPool.signUp('email', 'password', attributeList, null, (err, data) => {
-      if (err) {
-        console.error(err)
-      }
-      console.log(data)
-    })
   }
 
   return (
@@ -277,7 +207,6 @@ export default function SignIn() {
             </Grid>
           </Box>
         </Box>
-        <Button onClick={handleTest}>click me</Button>
       </Container>
     </ThemeProvider>
   )

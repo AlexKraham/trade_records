@@ -6,7 +6,8 @@
         "dynamodb:DeleteItem",
         "dynamodb:GetItem",
         "dynamodb:PutItem",
-        "dynamodb:Scan"
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
       ],
       "Effect": "Allow",
       "Resource": "*"

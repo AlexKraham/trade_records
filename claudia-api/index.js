@@ -31,7 +31,7 @@ api.get(
   function (request) {
     // GET all users
     return dynamoDb
-      .scan({ TableName: 'trade_records', Limit: 8 })
+      .scan({ TableName: 'trade_records', Limit: 5 })
       .promise()
       .then((response) => {
         return {
@@ -54,7 +54,7 @@ api.get(
     return dynamoDb
       .scan({
         TableName: 'trade_records',
-        Limit: 8,
+        Limit: 5,
         ExclusiveStartKey: {
           item_id: startKey,
         },
@@ -74,33 +74,53 @@ api.get(
 )
 
 /* get trades by user id*/
-api.get(
-  '/trades/mytrades/{username}',
-  function (request) {
-    return dynamoDb
-      .scan({
-        TableName: 'trade_records',
-        FilterExpression: '#username = :username',
-        ExpressionAttributeNames: {
-          '#username': 'username',
-        },
-        ExpressionAttributeValues: {
-          ':username': request.pathParams.username,
-        },
-      })
-      .promise()
-      .then((response) => {
-        return {
-          items: response.Items,
-          lastEvaluatedKey: response.LastEvaluatedKey,
-        }
-      })
-  }
-  // {
-  //   cognitoAuthorizer: 'api-auth-traderecord',
-  //   authorizationScopes: ['email', 'openid'],
-  // }
-)
+api.get('/trades/mytrades/{username}', function (request) {
+  return dynamoDb
+    .scan({
+      TableName: 'trade_records',
+      Limit: 5,
+      FilterExpression: '#username = :username',
+      ExpressionAttributeNames: {
+        '#username': 'username',
+      },
+      ExpressionAttributeValues: {
+        ':username': request.pathParams.username,
+      },
+    })
+    .promise()
+    .then((response) => {
+      return {
+        items: response.Items,
+        lastEvaluatedKey: response.LastEvaluatedKey,
+      }
+    })
+})
+
+api.get('/trades/mytrades/{username}/{startKey}', function (request) {
+  const startKey = request.pathParams.startkey
+  return dynamoDb
+    .scan({
+      TableName: 'trade_records',
+      Limit: 5,
+      ExclusiveStartKey: {
+        item_id: startKey,
+      },
+      FilterExpression: '#username = :username',
+      ExpressionAttributeNames: {
+        '#username': 'username',
+      },
+      ExpressionAttributeValues: {
+        ':username': request.pathParams.username,
+      },
+    })
+    .promise()
+    .then((response) => {
+      return {
+        items: response.Items,
+        lastEvaluatedKey: response.LastEvaluatedKey,
+      }
+    })
+})
 
 api.delete(
   '/trades/{itemid}',
@@ -122,14 +142,43 @@ api.delete(
   // }
 )
 
-api.put('/trades', function (request) {
+api.put('/updateitem', function (request) {
+  var params = {
+    TableName: 'trade_records',
+    Key: {
+      item_id: '39f02ef7-c68a-4f98-b1e3-45e7ff3b04f9',
+    },
+    UpdateExpression: 'set #type =:ty',
+    ExpressionAttributeValues: {
+      ':ty': 'stocksssss',
+    },
+    ExpressionAttributeNames: {
+      '#type': 'type',
+    },
+    ReturnValues: 'UPDATED_NEW',
+  }
+  return dynamoDb
+    .update(params, function (err, data) {
+      if (err) {
+        console.error(
+          'Unable to update item. Error JSON:',
+          JSON.stringify(err, null, 2)
+        )
+      } else {
+        console.log('UpdateItem succeeded:', JSON.stringify(data, null, 2))
+      }
+    })
+    .promise()
+})
+
+api.put('/tradesupdate', function (request) {
   var params = {
     TableName: 'trade_records',
     Key: {
       item_id: request.body.item_id,
     },
-    UpdateExpresson:
-      'set side=:side, type=:type, symbol=:symbol, position_size=:position_size, entry=:entry, exit=:exit, notes=:notes, date_executed=:date_executed, status=:status',
+    UpdateExpression:
+      'set #side=:side, #type=:type, #symbol=:symbol, #position_size=:position_size, #entry=:entry, #exit=:exit, #notes=:notes, #date_executed=:date_executed, #status=:status',
     ExpressionAttributeValues: {
       ':side': request.body.side,
       ':type': request.body.type,
@@ -155,16 +204,18 @@ api.put('/trades', function (request) {
     ReturnValues: 'UPDATED_NEW',
   }
 
-  return dynamoDb.update(params, function (err, data) {
-    if (err) {
-      console.error(
-        'Unable to update item. Error JSON:',
-        JSON.stringify(err, null, 2)
-      )
-    } else {
-      console.log('UpdateItem succeeded:', JSON.stringify(data, null, 2))
-    }
-  })
+  return dynamoDb
+    .update(params, function (err, data) {
+      if (err) {
+        console.error(
+          'Unable to update item. Error JSON:',
+          JSON.stringify(err, null, 2)
+        )
+      } else {
+        console.log('UpdateItem succeeded:', JSON.stringify(data, null, 2))
+      }
+    })
+    .promise()
 })
 
 api.post(
@@ -228,7 +279,7 @@ api.get(
   },
   {
     cognitoAuthorizer: 'trade-record-auth',
-    authorizationScopes: ['email', 'openid'],
+    authorizationScopes: ['email'],
   }
 )
 
