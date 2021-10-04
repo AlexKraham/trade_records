@@ -24,7 +24,7 @@ export const AuthProvider = (props) => {
         console.log('token', session.accessToken.jwtToken)
         var accessToken = session.getAccessToken().getJwtToken()
         console.log('idtoken', session.idToken)
-
+        setUser({ ...cognitoUser, access_token: accessToken })
         // console.log("id toekn", session.idToken.jwtToken)
       })
     }
