@@ -226,7 +226,7 @@ function LogTradeModal(props) {
       >
         Log New Trade
       </Button>
-      <Button onClick={genRandomTrade}>gen random trade</Button>
+      {/* <Button onClick={genRandomTrade}>gen random trade</Button> */}
       <Modal
         open={props.open}
         onClose={handleClose}

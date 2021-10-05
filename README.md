@@ -8,7 +8,7 @@ git clone https://github.com/AlexKraham/trade_records.git
 
 ### 1. Build dependencies
 
-If you don not have npm installed yet, install it.
+If you do not have npm installed yet, install it.
 Then run `npm install`
 
 ### 2. Starting the Front End locally
@@ -36,7 +36,7 @@ cd claudia-api
 npm install
 ```
 
-If you have not already, install aws-sdk and use the command aws-configure to set up a AWS IAM role that has access to update the API Gateway.
+If you have not already, install aws cli and use the command aws-configure to set up a AWS IAM role that has access to update the API Gateway.
 
 To deploy changes
 
