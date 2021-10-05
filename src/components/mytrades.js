@@ -226,7 +226,7 @@ function LogTradeModal(props) {
       >
         Log New Trade
       </Button>
-      <Button onClick={genRandomTrade}>gen random trade</Button>
+      {/* <Button onClick={genRandomTrade}>gen random trade</Button> */}
       <Modal
         open={props.open}
         onClose={handleClose}
@@ -365,11 +365,11 @@ function LogTradeModal(props) {
   )
 }
 
-export default function Trades(props) {
+export default function MyTrades(props) {
   const [user, setUser] = useContext(AuthContext)
   const { rows, setRows } = props
-  const { lastEvaluatedKey, setLastEvaluatedKey, startKeys, setStartKeys } =
-    props
+  const { myLastEvalKey, setMyLastEvalKey, myStartKeys, setMyStartKeys } = props
+
   const [pageIndex, setPageIndex] = useState(0)
   const [open, setOpen] = useState(false)
   const [initialValues, setInitialValues] = useState({})
@@ -423,7 +423,6 @@ export default function Trades(props) {
             <TableRow>
               <StyledTableCell>Date Executed</StyledTableCell>
               <StyledTableCell>Type</StyledTableCell>
-              <StyledTableCell>Symbol</StyledTableCell>
               <StyledTableCell>Side</StyledTableCell>
               <StyledTableCell>Size</StyledTableCell>
               <StyledTableCell>Entry </StyledTableCell>
@@ -439,7 +438,6 @@ export default function Trades(props) {
               <StyledTableRow key={index}>
                 <StyledTableCell>{row.date_executed}</StyledTableCell>
                 <StyledTableCell>{row.type}</StyledTableCell>
-                <StyledTableCell>{row.symbol}</StyledTableCell>
                 <StyledTableCell>{row.side}</StyledTableCell>
                 <StyledTableCell>{row.position_size}</StyledTableCell>
                 <StyledTableCell>{row.entry}</StyledTableCell>
@@ -500,37 +498,32 @@ export default function Trades(props) {
 
   async function handleNextPage() {
     let apiUrl =
-      props.selectedTab === 0
-        ? 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/'
-        : 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
-          user.username +
-          '/'
+      'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
+      user.username
     let fetched
-    fetched = await axios.get(apiUrl + lastEvaluatedKey.item_id, {
+    fetched = await axios.get(apiUrl + myLastEvalKey.item_id, {
       headers: {
         Authorization: user.access_token,
       },
     })
 
     setRows(fetched.data.items)
-    setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
-    setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
+    setMyLastEvalKey(fetched.data.lastEvaluatedKey)
+    setMyStartKeys([...myStartKeys, fetched.data.lastEvaluatedKey])
     setPageIndex(pageIndex + 1)
   }
 
   async function handlePreviousPage() {
-    startKeys.pop()
-    startKeys.pop()
+    myStartKeys.pop()
+    myStartKeys.pop()
 
     let apiUrl =
-      props.selectedTab === 0
-        ? 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/limit/'
-        : 'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
-          user.username +
-          '/'
+      'https://mfcmf6nqx4.execute-api.us-west-1.amazonaws.com/latest/trades/mytrades/' +
+      user.username
+
     // we are on page 3
     let fetched
-    if (startKeys.length === 0) {
+    if (myStartKeys.length === 0) {
       fetched = await axios.get(apiUrl, {
         headers: {
           Authorization: user.access_token,
@@ -538,7 +531,7 @@ export default function Trades(props) {
       })
     } else {
       fetched = await axios.get(
-        apiUrl + startKeys[startKeys.length - 1].item_id,
+        apiUrl + myStartKeys[myStartKeys.length - 1].item_id,
         {
           headers: {
             Authorization: user.access_token,
@@ -549,8 +542,8 @@ export default function Trades(props) {
 
     // console.log(fetched.data)
     setRows(fetched.data.items)
-    setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
-    setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
+    setMyLastEvalKey(fetched.data.lastEvaluatedKey)
+    setMyStartKeys([...myStartKeys, fetched.data.lastEvaluatedKey])
     setPageIndex(pageIndex - 1)
     // console.log('startkeys', startKeys)
   }
@@ -570,9 +563,9 @@ export default function Trades(props) {
           setValues={setValues}
         />
         <CustomizedTables />
-        {lastEvaluatedKey ? (
+        {myLastEvalKey ? (
           <Button
-            disabled={!lastEvaluatedKey}
+            disabled={!myLastEvalKey}
             style={{
               float: 'right',
               marginRight: '10px',
@@ -587,7 +580,7 @@ export default function Trades(props) {
           <></>
         )}
 
-        {startKeys.length > 1 ? (
+        {myStartKeys.length > 1 ? (
           <Button
             onClick={handlePreviousPage}
             style={{ float: 'right', marginRight: '10px', marginBottom: '5px' }}

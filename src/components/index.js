@@ -4,6 +4,7 @@ import { AuthContext } from '../GlobalStates'
 import { useHistory } from 'react-router-dom'
 import Navigation from './navigation'
 import Trades from './trades'
+import MyTrades from './mytrades'
 import axios from 'axios'
 
 import Button from '@mui/material/Button'
@@ -17,6 +18,8 @@ export default function Index() {
   const [loading, setLoading] = useState(true)
   const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null)
   const [startKeys, setStartKeys] = useState([])
+  const [myLastEvalKey, setMyLastEvalKey] = useState(null)
+  const [myStartKeys, setMyStartKeys] = useState([])
   const [rows, setRows] = useState([])
 
   // const [value, setValue] = React.useState(0)
@@ -60,8 +63,13 @@ export default function Index() {
       setRows(fetched.data.items)
     }
 
-    setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
-    setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
+    if (selectedTab === 0) {
+      setLastEvaluatedKey(fetched.data.lastEvaluatedKey)
+      setStartKeys([...startKeys, fetched.data.lastEvaluatedKey])
+    } else {
+      setMyLastEvalKey(fetched.data.lastEvaluatedKey)
+      setMyStartKeys([...myStartKeys, fetched.data.lastEvaluatedKey])
+    }
   }
 
   useEffect(() => {
@@ -92,6 +100,29 @@ export default function Index() {
             {/* <Tab label='My Trades' /> */}
           </Tabs>
 
+          {/* {selectedTab === 0 ? (
+            <Trades
+              selectedTab={selectedTab}
+              startKeys={startKeys}
+              setStartKeys={setStartKeys}
+              lastEvaluatedKey={lastEvaluatedKey}
+              setLastEvaluatedKey={setLastEvaluatedKey}
+              fetchData={fetchData}
+              rows={rows}
+              setRows={setRows}
+            />
+          ) : (
+            <MyTrades
+              selectedTab={selectedTab}
+              myStartKeys={myStartKeys}
+              setMyStartKeys={setMyStartKeys}
+              myLastEvalKey={myLastEvalKey}
+              setMyLastEvalKey={setMyLastEvalKey}
+              fetchData={fetchData}
+              rows={rows}
+              setRows={setRows}
+            />
+          )} */}
           <Trades
             selectedTab={selectedTab}
             startKeys={startKeys}
